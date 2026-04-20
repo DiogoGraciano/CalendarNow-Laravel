@@ -1,0 +1,64 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    ports:
+      - 80:80
+    tty: true
+    volumes:
+      - './docker/log/php:/var/log/'
+      - './api:/var/www/html/'
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - synapse
+  php-horizon:
+    build:
+      context: .
+      dockerfile: ./docker/php-horizon/Dockerfile
+    volumes:
+      - './docker/log/php:/var/log/'
+      - './api:/var/www/html/'
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - synapse
+  schedule:
+    build:
+      context: .
+      dockerfile: ./docker/php-schedule/Dockerfile
+    volumes:
+      - './docker/log/php:/var/log/'
+      - './api:/var/www/html/'
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - synapse
+  postgres:
+    image: postgis/postgis:18-3.6-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - './docker/log/postgres:/var/log/'
+    networks:
+      - synapse
+  redis:
+    image: redis:8-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - './docker/log/redis:/var/log/'
+    networks:
+      - synapse
+
+networks:
+  synapse:
+    driver: bridge
